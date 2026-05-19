@@ -1,24 +1,15 @@
 # nvpair
 
-[![Package Version](https://img.shields.io/hexpm/v/nvpair)](https://hex.pm/packages/nvpair)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/nvpair/)
+This project is a work in progress.  The library is functional, but lacks
+documentation, useful conversions, and general polish.
 
-```sh
-gleam add nvpair@1
-```
-```gleam
-import nvpair
-
-pub fn main() -> Nil {
-  // TODO: An example of the project in use
-}
-```
-
-Further documentation can be found at <https://hexdocs.pm/nvpair>.
+The nvpair module provides serialization and deserialization of the nvlist
+native and xdr packed formats, such as is used by ZFS on-disk, stream, and
+ioctl interfaces.  It is not compatible with the in-memory layout used by
+libzfs or libzfs_core.
 
 ## Development
 
 ```sh
-gleam run   # Run the project
 gleam test  # Run the tests
 ```
