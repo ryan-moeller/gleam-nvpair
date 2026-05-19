@@ -1,3 +1,6 @@
+// Copyright (c) 2020-2026 Ryan Moeller
+// SPDX-License-Identifier: BSD-2-Clause
+
 #include <sys/param.h>
 #include <assert.h>
 #include <fcntl.h>

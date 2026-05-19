@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Ryan Moeller
+// SPDX-License-Identifier: BSD-2-Clause
+
 import gleam/option.{type Option, Some, None}
 
 pub type DataType {
