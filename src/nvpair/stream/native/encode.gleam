@@ -7,12 +7,7 @@ import gleam/int
 import iv.{type Array}
 
 import nvpair/data_type
-import nvpair/list.{
-  type Header,
-  type NvList,
-  type Pair,
-  Header,
-} as nvl
+import nvpair/list.{type Header, type NvList, type Pair, Header} as nvl
 import nvpair/stream/align.{align8}
 import nvpair/stream/encode.{type ArrayEncoder, type ScalarEncoder}
 
@@ -23,11 +18,16 @@ fn header(header: Header) -> BitArray {
 
 fn embedded_header(header: Header) -> BitArray {
   let int_flags = nvl.flags(header.flags)
-  <<header.version:native-size(32),
+  <<
+    header.version:native-size(32),
     int_flags:native-size(32),
-    0:size(64), // priv
-    0:size(32), // flag
-    0:size(32)>> // pad
+    0:size(64),
+    // priv
+    0:size(32),
+    // flag
+    0:size(32),
+  >>
+  // pad
 }
 
 fn bool_value(value: Bool) -> BitArray {
@@ -45,13 +45,11 @@ fn bool_array(values: Array(Bool)) -> BitArray {
 }
 
 fn int(size: Int) -> ScalarEncoder(Int) {
-  fn (value: Int) -> BitArray {
-    <<value:native-size(size)>>
-  }
+  fn(value: Int) -> BitArray { <<value:native-size(size)>> }
 }
 
 fn int_array(size: Int) -> ArrayEncoder(Int) {
-  fn (values: Array(Int)) -> BitArray {
+  fn(values: Array(Int)) -> BitArray {
     values
     |> iv.map(int(size))
     |> iv.to_list
@@ -74,7 +72,9 @@ fn string_array(values: Array(String)) -> BitArray {
 }
 
 const embedded_header_size: Int = 24
+
 const pair_header_size: Int = 16
+
 const ptr_size: Int = 8
 
 fn pair(pair: Pair) -> BitArray {
@@ -90,36 +90,88 @@ fn pair(pair: Pair) -> BitArray {
     nvl.Int64(name, value) -> #(name, data_type.Int64, int(64)(value), 1)
     nvl.Uint64(name, value) -> #(name, data_type.Uint64, int(64)(value), 1)
     nvl.String(name, value) -> #(name, data_type.String, string(value), 1)
-    nvl.ByteArray(name, values) -> #(name, data_type.ByteArray,
-      int_array(8)(values), iv.size(values))
-    nvl.Int16Array(name, values) -> #(name, data_type.Int16Array,
-      int_array(16)(values), iv.size(values))
-    nvl.Uint16Array(name, values) -> #(name, data_type.Uint16Array,
-      int_array(16)(values), iv.size(values))
-    nvl.Int32Array(name, values) -> #(name, data_type.Int32Array,
-      int_array(32)(values), iv.size(values))
-    nvl.Uint32Array(name, values) -> #(name, data_type.Uint32Array,
-      int_array(32)(values), iv.size(values))
-    nvl.Int64Array(name, values) -> #(name, data_type.Int64Array,
-      int_array(64)(values), iv.size(values))
-    nvl.Uint64Array(name, values) -> #(name, data_type.Uint64Array,
-      int_array(64)(values), iv.size(values))
-    nvl.StringArray(name, values) -> #(name, data_type.StringArray,
-      string_array(values), iv.size(values))
+    nvl.ByteArray(name, values) -> #(
+      name,
+      data_type.ByteArray,
+      int_array(8)(values),
+      iv.size(values),
+    )
+    nvl.Int16Array(name, values) -> #(
+      name,
+      data_type.Int16Array,
+      int_array(16)(values),
+      iv.size(values),
+    )
+    nvl.Uint16Array(name, values) -> #(
+      name,
+      data_type.Uint16Array,
+      int_array(16)(values),
+      iv.size(values),
+    )
+    nvl.Int32Array(name, values) -> #(
+      name,
+      data_type.Int32Array,
+      int_array(32)(values),
+      iv.size(values),
+    )
+    nvl.Uint32Array(name, values) -> #(
+      name,
+      data_type.Uint32Array,
+      int_array(32)(values),
+      iv.size(values),
+    )
+    nvl.Int64Array(name, values) -> #(
+      name,
+      data_type.Int64Array,
+      int_array(64)(values),
+      iv.size(values),
+    )
+    nvl.Uint64Array(name, values) -> #(
+      name,
+      data_type.Uint64Array,
+      int_array(64)(values),
+      iv.size(values),
+    )
+    nvl.StringArray(name, values) -> #(
+      name,
+      data_type.StringArray,
+      string_array(values),
+      iv.size(values),
+    )
     nvl.Hrtime(name, value) -> #(name, data_type.Hrtime, int(64)(value), 1)
     nvl.Nvlist(name, value) -> #(name, data_type.Nvlist, nvlist(value), 1)
-    nvl.NvlistArray(name, values) -> #(name, data_type.NvlistArray,
-      nvlist_array(values), iv.size(values))
-    nvl.BooleanValue(name, value) -> #(name, data_type.BooleanValue,
-      bool_value(value), 1)
+    nvl.NvlistArray(name, values) -> #(
+      name,
+      data_type.NvlistArray,
+      nvlist_array(values),
+      iv.size(values),
+    )
+    nvl.BooleanValue(name, value) -> #(
+      name,
+      data_type.BooleanValue,
+      bool_value(value),
+      1,
+    )
     nvl.Int8(name, value) -> #(name, data_type.Int8, int(8)(value), 1)
     nvl.Uint8(name, value) -> #(name, data_type.Uint8, int(8)(value), 1)
-    nvl.BooleanArray(name, values) -> #(name, data_type.BooleanArray,
-      bool_array(values), iv.size(values))
-    nvl.Int8Array(name, values) -> #(name, data_type.Int8Array,
-      int_array(8)(values), iv.size(values))
-    nvl.Uint8Array(name, values) -> #(name, data_type.Uint8Array,
-      int_array(8)(values), iv.size(values))
+    nvl.BooleanArray(name, values) -> #(
+      name,
+      data_type.BooleanArray,
+      bool_array(values),
+      iv.size(values),
+    )
+    nvl.Int8Array(name, values) -> #(
+      name,
+      data_type.Int8Array,
+      int_array(8)(values),
+      iv.size(values),
+    )
+    nvl.Uint8Array(name, values) -> #(
+      name,
+      data_type.Uint8Array,
+      int_array(8)(values),
+      iv.size(values),
+    )
     nvl.Double(name, value) -> #(name, data_type.Double, double(value), 1)
   }
   let name = string(name)
@@ -127,12 +179,15 @@ fn pair(pair: Pair) -> BitArray {
   assert name_size < int.bitwise_shift_left(1, 16) as "name too long"
   let header_size = pair_header_size + name_size
   let header_pad_size = align8(header_size) - header_size
-  let size = header_size + header_pad_size + case t {
-    data_type.Nvlist -> align8(embedded_header_size)
-    data_type.NvlistArray ->
-      {ptr_size + align8(embedded_header_size)} * array_len
-    _ -> bit_array.byte_size(value)
-  }
+  let size =
+    header_size
+    + header_pad_size
+    + case t {
+      data_type.Nvlist -> align8(embedded_header_size)
+      data_type.NvlistArray ->
+        { ptr_size + align8(embedded_header_size) } * array_len
+      _ -> bit_array.byte_size(value)
+    }
   let value_pad_size = case t {
     data_type.Nvlist -> 0
     _ -> align8(size) - size
@@ -140,15 +195,17 @@ fn pair(pair: Pair) -> BitArray {
   let padded_size = size + value_pad_size
   assert padded_size < int.bitwise_shift_left(1, 32) as "size too big"
   let data_type = data_type.data_type_index(t)
-  <<padded_size:native-size(32),
+  <<
+    padded_size:native-size(32),
     name_size:native-size(16),
     0:size(16),
     array_len:native-size(32),
     data_type:native-size(32),
     name:bits,
-    0:size(8 * header_pad_size),
+    0:size({ 8 * header_pad_size }),
     value:bits,
-    0:size(8 * value_pad_size)>>
+    0:size({ 8 * value_pad_size }),
+  >>
 }
 
 fn pairs(nvl: NvList) -> BitArray {
@@ -181,7 +238,7 @@ fn nvlist_array(values: Array(NvList)) -> BitArray {
     |> iv.map(pairs)
     |> iv.to_list
     |> bit_array.concat
-  <<0:size(64 * iv.size(values)), headers:bits, lists:bits>>
+  <<0:size({ 64 * iv.size(values) }), headers:bits, lists:bits>>
 }
 
 fn double(value: Float) -> BitArray {

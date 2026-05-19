@@ -9,14 +9,24 @@ pub type Error {
   Message(String)
 }
 
-pub type ScalarResult(t) = Result(#(t, BitArray), Error)
-pub type ScalarDecoder(t) = fn(BitArray) -> ScalarResult(t)
+pub type ScalarResult(t) =
+  Result(#(t, BitArray), Error)
 
-pub type ArrayResult(t) = Result(#(Array(t), BitArray), Error)
-pub type ArrayDecoder(t) = fn(BitArray, Int) -> ArrayResult(t)
+pub type ScalarDecoder(t) =
+  fn(BitArray) -> ScalarResult(t)
 
-fn array_impl(acc: List(t), input: BitArray, len: Int, decode: ScalarDecoder(t))
-  -> ArrayResult(t) {
+pub type ArrayResult(t) =
+  Result(#(Array(t), BitArray), Error)
+
+pub type ArrayDecoder(t) =
+  fn(BitArray, Int) -> ArrayResult(t)
+
+fn array_impl(
+  acc: List(t),
+  input: BitArray,
+  len: Int,
+  decode: ScalarDecoder(t),
+) -> ArrayResult(t) {
   case len {
     0 -> Ok(#(iv.from_reverse_list(acc), input))
     _ -> {
@@ -27,7 +37,7 @@ fn array_impl(acc: List(t), input: BitArray, len: Int, decode: ScalarDecoder(t))
 }
 
 pub fn array(decode: ScalarDecoder(t)) -> ArrayDecoder(t) {
-  fn (input: BitArray, len: Int) -> ArrayResult(t) {
+  fn(input: BitArray, len: Int) -> ArrayResult(t) {
     array_impl([], input, len, decode)
   }
 }

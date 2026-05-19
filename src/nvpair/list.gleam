@@ -3,7 +3,7 @@
 
 import gleam/int
 import gleam/list
-import gleam/option.{type Option, Some, None}
+import gleam/option.{type Option, None, Some}
 import gleam/set
 
 import iv.{type Array}
@@ -40,19 +40,25 @@ pub fn index_flag(index: Int) -> Option(Flag) {
   }
 }
 
-fn int_flags_impl(ok: List(Flag), bad: Int, flags: Int, index: Int)
--> #(List(Flag), Int) {
+fn int_flags_impl(
+  ok: List(Flag),
+  bad: Int,
+  flags: Int,
+  index: Int,
+) -> #(List(Flag), Int) {
   let mask = int.bitwise_shift_left(1, index)
   let next = index + 1
   case mask > flags {
     True -> #(ok, bad)
-    False -> case int.bitwise_and(flags, mask) {
-      0 -> int_flags_impl(ok, bad, flags, next)
-      _ -> case index_flag(index) {
-        Some(flag) -> int_flags_impl([flag, ..ok], bad, flags, next)
-        None -> int_flags_impl(ok, int.bitwise_and(bad, mask), flags, next)
+    False ->
+      case int.bitwise_and(flags, mask) {
+        0 -> int_flags_impl(ok, bad, flags, next)
+        _ ->
+          case index_flag(index) {
+            Some(flag) -> int_flags_impl([flag, ..ok], bad, flags, next)
+            None -> int_flags_impl(ok, int.bitwise_and(bad, mask), flags, next)
+          }
       }
-    }
   }
 }
 
@@ -188,7 +194,7 @@ pub type NvList {
 fn validate_unique_name_type(pairs: List(Pair)) -> Bool {
   let nametypes =
     pairs
-    |> list.map(fn (pair) { #(pair_name(pair), pair_type(pair)) })
+    |> list.map(fn(pair) { #(pair_name(pair), pair_type(pair)) })
     |> set.from_list
   set.size(nametypes) == list.length(pairs)
 }
@@ -201,16 +207,20 @@ fn validate_unique_name(pairs: List(Pair)) -> Bool {
   set.size(names) == list.length(pairs)
 }
 
-pub fn validate(pairs: List(Pair), flags: List(Flag), rest: BitArray)
-  -> ScalarResult(NvList) {
+pub fn validate(
+  pairs: List(Pair),
+  flags: List(Flag),
+  rest: BitArray,
+) -> ScalarResult(NvList) {
   // XXX: flags is interpreted as a bit field, but the two valid flags are
   // incompatible, so UniqueNameType gets higher priority.
   let valid = case list.contains(flags, UniqueNameType) {
     True -> validate_unique_name_type(pairs)
-    False -> case list.contains(flags, UniqueName) {
-      True -> validate_unique_name(pairs)
-      False -> True
-    }
+    False ->
+      case list.contains(flags, UniqueName) {
+        True -> validate_unique_name(pairs)
+        False -> True
+      }
   }
   case valid {
     True -> Ok(#(NvList(flags, iv.from_reverse_list(pairs)), rest))

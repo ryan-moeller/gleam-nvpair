@@ -8,21 +8,13 @@ import gleam/result
 import iv
 
 import nvpair/data_type
-import nvpair/list.{
-  type Flag,
-  type Header,
-  type NvList,
-  type Pair,
-  Header,
-} as nvl
+import nvpair/list.{type Flag, type Header, type NvList, type Pair, Header} as nvl
 import nvpair/stream/align.{align8}
 import nvpair/stream/decode.{type ScalarDecoder, type ScalarResult, array}
 
 fn header(input: BitArray) -> ScalarResult(Header) {
   case input {
-    <<version:native-signed-size(32),
-      flags:native-signed-size(32),
-      rest:bytes>> -> {
+    <<version:native-signed-size(32), flags:native-signed-size(32), rest:bytes>> -> {
       use version <- result.try(nvl.check_version(version))
       use flags <- result.try(nvl.check_flags(flags))
       Ok(#(Header(version, flags), rest))
@@ -33,12 +25,14 @@ fn header(input: BitArray) -> ScalarResult(Header) {
 
 fn embedded_header(input: BitArray) -> ScalarResult(Header) {
   case input {
-    <<version:native-signed-size(32),
+    <<
+      version:native-signed-size(32),
       flags:native-signed-size(32),
       _priv:native-unsigned-size(64),
       _flag:native-unsigned-size(32),
       _pad:native-signed-size(32),
-      rest:bytes>> -> {
+      rest:bytes,
+    >> -> {
       use version <- result.try(nvl.check_version(version))
       use flags <- result.try(nvl.check_flags(flags))
       Ok(#(Header(version, flags), rest))
@@ -56,7 +50,7 @@ fn bool_value(input: BitArray) -> ScalarResult(Bool) {
 }
 
 fn int(size: Int) -> ScalarDecoder(Int) {
-  fn (input: BitArray) -> ScalarResult(Int) {
+  fn(input: BitArray) -> ScalarResult(Int) {
     case input {
       <<value:native-signed-size(size), rest:bytes>> -> Ok(#(value, rest))
       _ -> Error(decode.Message("invalid integer"))
@@ -65,7 +59,7 @@ fn int(size: Int) -> ScalarDecoder(Int) {
 }
 
 fn uint(size: Int) -> ScalarDecoder(Int) {
-  fn (input: BitArray) -> ScalarResult(Int) {
+  fn(input: BitArray) -> ScalarResult(Int) {
     case input {
       <<value:native-unsigned-size(size), rest:bytes>> -> Ok(#(value, rest))
       _ -> Error(decode.Message("invalid integer"))
@@ -95,35 +89,41 @@ fn realign(input: BitArray, offset: Int) -> Result(BitArray, decode.Error) {
   decode.skip(input, align8(offset) - offset)
 }
 
-fn pairs(acc: List(Pair), input: BitArray, flags: List(Flag))
-  -> ScalarResult(NvList) {
+fn pairs(
+  acc: List(Pair),
+  input: BitArray,
+  flags: List(Flag),
+) -> ScalarResult(NvList) {
   let input_len = bit_array.byte_size(input)
   case input {
     <<0:size(32), rest:bytes>> -> nvl.validate(acc, flags, rest)
 
-    <<size:native-signed-size(32),
+    <<
+      size:native-signed-size(32),
       name_size:native-signed-size(16),
       _reserved:native-signed-size(16),
       array_len:native-signed-size(32),
       data_type:native-signed-size(32),
       name:bytes-size(name_size - 1),
       0:size(8),
-      rest:bytes>> -> {
+      rest:bytes,
+    >> -> {
       let rest_len = bit_array.byte_size(rest)
       let pair_header_len = input_len - rest_len
       assert pair_header_len <= size as "invalid pair size"
       use rest <- result.try(realign(rest, pair_header_len))
-      use name <- result.try(result.replace_error(bit_array.to_string(name),
-        decode.Message("invalid name")))
-      use data_type <- result.try(data_type.index_data_type(data_type)
-        |> option.to_result(decode.Message("invalid data type")))
+      use name <- result.try(result.replace_error(
+        bit_array.to_string(name),
+        decode.Message("invalid name"),
+      ))
+      use data_type <- result.try(
+        data_type.index_data_type(data_type)
+        |> option.to_result(decode.Message("invalid data type")),
+      )
       use #(pair, rest) <- result.try(case data_type {
-        data_type.Dontcare ->
-          Ok(#(nvl.Dontcare(name), rest))
-        data_type.Unknown ->
-          Ok(#(nvl.Unknown(name), rest))
-        data_type.Boolean ->
-          Ok(#(nvl.Boolean(name), rest))
+        data_type.Dontcare -> Ok(#(nvl.Dontcare(name), rest))
+        data_type.Unknown -> Ok(#(nvl.Unknown(name), rest))
+        data_type.Boolean -> Ok(#(nvl.Boolean(name), rest))
         data_type.Byte -> {
           use #(value, rest) <- result.try(uint(8)(rest))
           Ok(#(nvl.Byte(name, value), rest))
@@ -200,15 +200,17 @@ fn pairs(acc: List(Pair), input: BitArray, flags: List(Flag))
         }
         data_type.NvlistArray -> {
           use rest <- result.try(decode.skip(rest, 8 * array_len))
-          use #(headers, rest) <-
-            result.try(array(embedded_header)(rest, array_len))
-          use #(values, rest) <- result.try(iv.try_fold(headers, #([], rest),
-            fn (state, header) {
+          use #(headers, rest) <- result.try(array(embedded_header)(
+            rest,
+            array_len,
+          ))
+          use #(values, rest) <- result.try(
+            iv.try_fold(headers, #([], rest), fn(state, header) {
               let #(acc, rest) = state
               use #(nvl, rest) <- result.try(pairs([], rest, header.flags))
               Ok(#([nvl, ..acc], rest))
-            }
-          ))
+            }),
+          )
           Ok(#(nvl.NvlistArray(name, iv.from_reverse_list(values)), rest))
         }
         data_type.BooleanValue -> {

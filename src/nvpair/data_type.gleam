@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Ryan Moeller
 // SPDX-License-Identifier: BSD-2-Clause
 
-import gleam/option.{type Option, Some, None}
+import gleam/option.{type Option, None, Some}
 
 pub type DataType {
   Dontcare
@@ -106,14 +106,19 @@ pub fn index_data_type(index: Int) -> Option(DataType) {
 
 pub fn is_array_type(data_type: DataType) -> Bool {
   case data_type {
-    Dontcare | Unknown
+    Dontcare
+    | Unknown
     | Boolean
     | BooleanValue
     | Byte
-    | Int8 | Uint8
-    | Int16 | Uint16
-    | Int32 | Uint32
-    | Int64 | Uint64
+    | Int8
+    | Uint8
+    | Int16
+    | Uint16
+    | Int32
+    | Uint32
+    | Int64
+    | Uint64
     | String
     | Hrtime
     | Nvlist
@@ -121,10 +126,14 @@ pub fn is_array_type(data_type: DataType) -> Bool {
 
     BooleanArray
     | ByteArray
-    | Int8Array | Uint8Array
-    | Int16Array | Uint16Array
-    | Int32Array | Uint32Array
-    | Int64Array | Uint64Array
+    | Int8Array
+    | Uint8Array
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Int64Array
+    | Uint64Array
     | StringArray
     | NvlistArray -> True
   }
