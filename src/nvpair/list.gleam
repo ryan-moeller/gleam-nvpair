@@ -207,11 +207,7 @@ fn validate_unique_name(pairs: List(Pair)) -> Bool {
   set.size(names) == list.length(pairs)
 }
 
-pub fn validate(
-  pairs: List(Pair),
-  flags: List(Flag),
-  rest: BitArray,
-) -> ScalarResult(NvList) {
+pub fn from_list(pairs: List(Pair), flags: List(Flag)) -> Option(NvList) {
   // XXX: flags is interpreted as a bit field, but the two valid flags are
   // incompatible, so UniqueNameType gets higher priority.
   let valid = case list.contains(flags, UniqueNameType) {
@@ -223,7 +219,18 @@ pub fn validate(
       }
   }
   case valid {
-    True -> Ok(#(NvList(flags, iv.from_reverse_list(pairs)), rest))
-    False -> Error(decode.Message("pairs incompatible with flags"))
+    True -> Some(NvList(flags, iv.from_reverse_list(pairs)))
+    False -> None
+  }
+}
+
+pub fn validate(
+  pairs: List(Pair),
+  flags: List(Flag),
+  rest: BitArray,
+) -> ScalarResult(NvList) {
+  case from_list(pairs, flags) {
+    Some(nvl) -> Ok(#(nvl, rest))
+    None -> Error(decode.Message("pairs incompatible with flags"))
   }
 }
