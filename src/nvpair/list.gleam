@@ -234,3 +234,8 @@ pub fn validate(
     None -> Error(decode.Message("pairs incompatible with flags"))
   }
 }
+
+pub fn lookup(nvl: NvList, name: String) -> Option(Pair) {
+  iv.find(nvl.pairs, fn(pair) { pair_name(pair) == name })
+  |> option.from_result
+}
