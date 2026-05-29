@@ -10,7 +10,7 @@ import iv
 import nvpair/data_type
 import nvpair/list.{type Flag, type Header, type NvList, type Pair, Header} as nvl
 import nvpair/stream/align.{align8}
-import nvpair/stream/decode.{type ScalarDecoder, type ScalarResult, array}
+import nvpair/stream/decode.{type ScalarDecoder, type ScalarResult, array, take}
 
 fn header(input: BitArray) -> ScalarResult(Header) {
   case input {
@@ -157,7 +157,7 @@ fn pairs(
           Ok(#(nvl.String(name, value), rest))
         }
         data_type.ByteArray -> {
-          use #(values, rest) <- result.try(array(uint(8))(rest, array_len))
+          use #(values, rest) <- result.try(take(rest, array_len))
           Ok(#(nvl.ByteArray(name, values), rest))
         }
         data_type.Int16Array -> {

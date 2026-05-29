@@ -93,8 +93,8 @@ fn pair(pair: Pair) -> BitArray {
     nvl.ByteArray(name, values) -> #(
       name,
       data_type.ByteArray,
-      int_array(8)(values),
-      iv.size(values),
+      values,
+      bit_array.byte_size(values),
     )
     nvl.Int16Array(name, values) -> #(
       name,

@@ -93,9 +93,8 @@ fn pair(pair: Pair) -> BitArray {
       #(name, data_type.String, data, 1, bit_array.byte_size(data) + 1)
     }
     nvl.ByteArray(name, values) -> {
-      let data = values |> iv.map(int(8)) |> iv.to_list |> bit_array.concat
-      let nelem = iv.size(values)
-      #(name, data_type.ByteArray, data, nelem, nelem)
+      let nelem = bit_array.byte_size(values)
+      #(name, data_type.ByteArray, values, nelem, nelem)
     }
     nvl.Int16Array(name, values) -> {
       let nelem = iv.size(values)

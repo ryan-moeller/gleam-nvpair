@@ -143,12 +143,8 @@ fn pairs(
           Ok(#(nvl.String(name, value), rest))
         }
         data_type.ByteArray -> {
-          // TODO: ByteArray should be a BitArray of bytes not an Array(Int)
           // NOTE: xdr_opaque, not xdr_array.
-          use #(values, rest) <- result.try(decode.array(uint(8))(
-            rest,
-            array_len,
-          ))
+          use #(values, rest) <- result.try(decode.take(rest, array_len))
           Ok(#(nvl.ByteArray(name, values), rest))
         }
         data_type.Int16Array -> {

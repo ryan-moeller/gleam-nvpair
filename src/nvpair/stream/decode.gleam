@@ -48,3 +48,10 @@ pub fn skip(input: BitArray, len: Int) -> Result(BitArray, Error) {
     _ -> Error(Message("invalid input"))
   }
 }
+
+pub fn take(input: BitArray, len: Int) -> ScalarResult(BitArray) {
+  case input {
+    <<head:bytes-size(len), rest:bytes>> -> Ok(#(head, rest))
+    _ -> Error(Message("invalid integer"))
+  }
+}

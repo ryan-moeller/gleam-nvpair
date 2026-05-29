@@ -99,7 +99,7 @@ pub type Pair {
   Int64(String, Int)
   Uint64(String, Int)
   String(String, String)
-  ByteArray(String, Array(Int))
+  ByteArray(String, BitArray)
   Int16Array(String, Array(Int))
   Uint16Array(String, Array(Int))
   Int32Array(String, Array(Int))
