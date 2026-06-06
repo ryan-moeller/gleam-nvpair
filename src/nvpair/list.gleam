@@ -239,3 +239,7 @@ pub fn lookup(nvl: NvList, name: String) -> Option(Pair) {
   iv.find(nvl.pairs, fn(pair) { pair_name(pair) == name })
   |> option.from_result
 }
+
+pub fn is_empty(nvl: NvList) -> Bool {
+  iv.is_empty(nvl.pairs)
+}
