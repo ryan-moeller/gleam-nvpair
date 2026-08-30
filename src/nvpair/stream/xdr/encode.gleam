@@ -15,7 +15,7 @@ fn array(encoder: ScalarEncoder(t), values: Array(t)) -> BitArray {
   case iv.size(values) {
     0 -> <<>>
     nelem -> {
-      let nelem = nelem |> int(32)
+      let nelem = nelem |> int(32)()
       let elements =
         values
         |> iv.map(encoder)
@@ -175,13 +175,13 @@ fn pair(pair: Pair) -> BitArray {
   }
   let name_len = string.byte_size(name) + 1
   let name = name |> string
-  let data_type = data_type.data_type_index(t) |> int(32)
-  let array_len = array_len |> int(32)
+  let data_type = data_type.data_type_index(t) |> int(32)()
+  let array_len = array_len |> int(32)()
   let value_size = bit_array.byte_size(value)
   let value_pad_size = 8 * { align4(value_size) - value_size }
   // XXX: Encoded length doesn't matter in libnvpair, it isn't correct or used.
-  let encoded_len = align4(5 * 4 + name_len) + align4(value_size) |> int(32)
-  let decoded_len = size_calc(name_len, data_len) |> int(32)
+  let encoded_len = align4(5 * 4 + name_len) + align4(value_size) |> int(32)()
+  let decoded_len = size_calc(name_len, data_len) |> int(32)()
   <<
     encoded_len:bits,
     decoded_len:bits,
