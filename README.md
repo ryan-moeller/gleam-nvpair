@@ -1,5 +1,7 @@
 # nvpair
 
+[![test](https://github.com/ryan-moeller/gleam-nvpair/workflows/test/badge.svg)](https://github.com/ryan-moeller/gleam-nvpair/actions/workflows/test.yml)
+
 This project is a work in progress.  The library is functional, but lacks
 documentation, useful conversions, and general polish.
 
